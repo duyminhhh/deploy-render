@@ -1,0 +1,42 @@
+# render.yaml — đặt ở thư mục gốc: inventory-fixed/render.yaml
+
+databases:
+  - name: inventory-db
+    databaseName: inventory_db
+    user: inventory_user
+    plan: free
+
+services:
+  # ── Backend (FastAPI) ────────────────────────────────────────────────────
+  - type: web
+    name: inventory-backend
+    plan: free
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: inventory-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false   # bạn điền sau khi có URL frontend
+
+  # ── Frontend (Static Site) ───────────────────────────────────────────────
+  - type: web
+    name: inventory-frontend
+    plan: free
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false   # bạn điền URL backend sau khi deploy

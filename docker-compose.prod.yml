@@ -1,0 +1,20 @@
+version: '3.9'
+
+# Production override - use with:
+# docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  db:
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-inventory_pass_prod}
+
+  backend:
+    environment:
+      DATABASE_URL: postgresql://inventory_user:${DB_PASSWORD:-inventory_pass_prod}@db:5432/inventory_db
+      SECRET_KEY: ${SECRET_KEY:-change-this-in-production}
+      FRONTEND_URL: ${FRONTEND_URL:-https://yourdomain.com}
+
+  frontend:
+    build:
+      args:
+        VITE_API_URL: ${API_URL:-https://yourdomain.com/api}
