@@ -1,35 +1,31 @@
-# render.yaml — đặt ở thư mục gốc: inventory-fixed/render.yaml
-
-databases:
-  - name: inventory-db
-    databaseName: inventory_db
-    user: inventory_user
-    plan: free
-
 services:
-  # ── Backend (FastAPI) ────────────────────────────────────────────────────
   - type: web
-    name: inventory-backend
-    plan: free
+    name: bhd-storage-backend
     runtime: python
+    region: singapore
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    healthCheckPath: /docs
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: inventory-db
+          name: bhd-storage-db
           property: connectionString
       - key: SECRET_KEY
         generateValue: true
       - key: FRONTEND_URL
-        sync: false   # bạn điền sau khi có URL frontend
+        fromService:
+          name: bhd-storage-frontend
+          type: web
+          property: host
+          format: https://{value}
 
-  # ── Frontend (Static Site) ───────────────────────────────────────────────
   - type: web
-    name: inventory-frontend
-    plan: free
+    name: bhd-storage-frontend
     runtime: static
+    region: singapore
     rootDir: frontend
     buildCommand: npm ci && npm run build
     staticPublishPath: dist
@@ -39,4 +35,15 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        sync: false   # bạn điền URL backend sau khi deploy
+        fromService:
+          name: bhd-storage-backend
+          type: web
+          property: host
+          format: https://{value}
+
+databases:
+  - name: bhd-storage-db
+    region: singapore
+    plan: free
+    databaseName: bhd_storage
+    user: bhd_user
