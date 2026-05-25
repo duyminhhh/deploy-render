@@ -25,7 +25,6 @@ services:
   - type: web
     name: bhd-storage-frontend
     runtime: static
-    region: singapore
     rootDir: frontend
     buildCommand: npm ci && npm run build
     staticPublishPath: dist
