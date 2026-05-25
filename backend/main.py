@@ -102,9 +102,11 @@ def seed_default_users(db):
     if db.query(models.User).count() > 0:
         return
     for u in [
-        {"username": "admin",   "password": "admin123",   "role": models.RoleEnum.ADMIN,   "full_name": "Quản trị viên"},
-        {"username": "manager", "password": "manager123", "role": models.RoleEnum.MANAGER, "full_name": "Nguyễn Quản Lý"},
-        {"username": "staff",   "password": "staff123",   "role": models.RoleEnum.STAFF,   "full_name": "Trần Nhân Viên"},
+        {"username": "admin",   "password": "admin123",   "role": models.RoleEnum.ADMIN,   "full_name": "Trịnh Trần Phúc Khang"},
+        {"username": "manager", "password": "manager123", "role": models.RoleEnum.MANAGER, "full_name": "Ngũ Minh Duy"},
+        {"username": "staff",   "password": "staff123",   "role": models.RoleEnum.STAFF,   "full_name": "Nguyễn Quốc Đăng"},
+        {"username": "staff2",   "password": "staff123",   "role": models.RoleEnum.STAFF,   "full_name": "Lê Gia Bảo"},
+
     ]:
         db.add(models.User(
             username=u["username"], password=get_password_hash(u["password"]),
