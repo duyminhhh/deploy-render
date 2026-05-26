@@ -4,9 +4,9 @@ import { useAuth } from '../context/AuthContext'
 import { getChatMessages, WS_URL } from '../api'
 
 const ROLE_COLORS = { ADMIN: '#EF4444', MANAGER: '#2563EB', STAFF: '#10B981' }
-const ROLE_LABELS = { ADMIN: 'Admin', MANAGER: 'Manager', STAFF: 'Staff' }
+const ROLE_LABELS = { ADMIN: 'Admin', MANAGER: 'Quản lý', STAFF: 'Nhân viên' }
 
-export default function ChatWidget({ onClose }) {
+export default function ChatWidget({ onClose, onNewMessage }) {
   const { user } = useAuth()
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
@@ -19,7 +19,7 @@ export default function ChatWidget({ onClose }) {
       setMessages(res.data.map(m => ({
         id: m.id,
         sender_id: m.sender_id,
-        sender_name: m.sender?.username || 'Unknown',
+        sender_name: m.sender?.full_name || m.sender?.username || 'Unknown',
         sender_role: m.sender?.role || 'STAFF',
         content: m.content,
         created_at: m.created_at
@@ -37,6 +37,10 @@ export default function ChatWidget({ onClose }) {
       const data = JSON.parse(e.data)
       if (data.type === 'message') {
         setMessages(prev => [...prev, data])
+        // Notify Layout nếu tin nhắn từ người khác
+        if (data.sender_id !== user?.id && onNewMessage) {
+          onNewMessage()
+        }
       }
     }
     return () => ws.close()

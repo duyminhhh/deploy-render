@@ -101,7 +101,7 @@ export default function VouchersPage() {
   }, [filterType, filterStatus])
 
   useEffect(() => { load() }, [load])
-  useEffect(() => { getProducts().then(r => setProducts(r.data)) }, [])
+  useEffect(() => { getProducts().then(r => setProducts(r.data.slice().sort((a, b) => a.name.localeCompare(b.name, 'vi')))) }, [])
 
   const addItem = () => setForm(f => ({ ...f, items: [...f.items, { product_id: '', approved_quantity: 1 }] }))
   const updateItem = (i, field, val) => setForm(f => ({
@@ -187,24 +187,24 @@ export default function VouchersPage() {
           <h3 style={{ marginBottom: 16 }}>Tạo phiếu mới</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
             <div>
-              <label className="form-label">Loại *</label>
+              <label className="form-label">Loại </label>
               <select className="form-input" value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
                 <option value="IN">Nhập kho</option>
                 <option value="OUT">Xuất kho</option>
               </select>
             </div>
             <div>
-              <label className="form-label">Tiêu đề *</label>
+              <label className="form-label">Tiêu đề </label>
               <input className="form-input" placeholder="VD: Nhập hàng tháng 6" value={form.title}
                 onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
             </div>
             <div>
-              <label className="form-label">Hiệu lực đến</label>
+              <label className="form-label">Hiệu lực đến </label>
               <input type="datetime-local" className="form-input" value={form.valid_until}
                 onChange={e => setForm(f => ({ ...f, valid_until: e.target.value }))} />
             </div>
             <div>
-              <label className="form-label">Ghi chú</label>
+              <label className="form-label">Ghi chú </label>
               <input className="form-input" placeholder="Ghi chú..." value={form.note}
                 onChange={e => setForm(f => ({ ...f, note: e.target.value }))} />
             </div>
@@ -218,7 +218,7 @@ export default function VouchersPage() {
               <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 140px 36px', gap: 8, marginBottom: 8 }}>
                 <select className="form-input" value={item.product_id} onChange={e => updateItem(i, 'product_id', e.target.value)}>
                   <option value="">-- Chọn sản phẩm --</option>
-                  {products.map(p => <option key={p.id} value={p.id}>{p.name} (tồn: {p.quantity})</option>)}
+                  {products.map(p => <option key={p.id} value={p.id}>{p.name} (tồn: {p.quantity} {p.unit || 'cái'})</option>)}
                 </select>
                 <input type="number" min="1" className="form-input" placeholder="Số lượng"
                   value={item.approved_quantity} onChange={e => updateItem(i, 'approved_quantity', e.target.value)} />
@@ -296,10 +296,16 @@ export default function VouchersPage() {
                       </>
                     )}
                     {v.status === 'INVESTIGATING' && (
-                      <button className="btn btn-primary" style={{ fontSize: 12, padding: '4px 10px', background: '#EA580C' }}
-                        onClick={() => { setActionModal({ type: 'force', voucherId: v.id }); setActionReason('') }}>
-                        <AlertTriangle size={12} /> Chấp nhận & Hoàn tất
-                      </button>
+                      <>
+                        <button className="btn btn-primary" style={{ fontSize: 12, padding: '4px 10px', background: '#EA580C' }}
+                          onClick={() => { setActionModal({ type: 'force', voucherId: v.id }); setActionReason('') }}>
+                          <AlertTriangle size={12} /> Chấp nhận & Hoàn tất
+                        </button>
+                        <button className="btn btn-secondary" style={{ fontSize: 12, padding: '4px 10px', color: '#DC2626' }}
+                          onClick={() => { setActionModal({ type: 'cancel', voucherId: v.id }); setActionReason('') }}>
+                          <Ban size={12} /> Huỷ
+                        </button>
+                      </>
                     )}
                     {v.status === 'COMPLETED' && (
                       <button className="btn btn-secondary" style={{ fontSize: 12, padding: '4px 10px' }}
@@ -307,6 +313,15 @@ export default function VouchersPage() {
                         <Printer size={12} /> In phiếu
                       </button>
                     )}
+                  </div>
+                )}
+                {/* Staff: có thể huỷ phiếu DRAFT do mình tạo */}
+                {!isManager && v.status === 'DRAFT' && v.creator?.username === user?.username && (
+                  <div style={{ display: 'flex', gap: 6 }} onClick={e => e.stopPropagation()}>
+                    <button className="btn btn-secondary" style={{ fontSize: 12, padding: '4px 10px', color: '#DC2626' }}
+                      onClick={() => { setActionModal({ type: 'cancel', voucherId: v.id }); setActionReason('') }}>
+                      <Ban size={12} /> Huỷ
+                    </button>
                   </div>
                 )}
                 {expandedId === v.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}

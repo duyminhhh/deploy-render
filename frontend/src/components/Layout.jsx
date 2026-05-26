@@ -12,7 +12,7 @@ const navItems = [
   { to: '/', label: 'Tổng quan', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'STAFF'] },
   // Admin
   { to: '/users', label: 'Người dùng', icon: Users, roles: ['ADMIN'] },
-  // Manager — chỉ các chức năng quản lý, không có Nhập/Xuất kho hay Nhập liệu
+  // Manager
   { to: '/products',     label: 'Sản phẩm',          icon: Package,  roles: ['MANAGER'] },
   { to: '/vouchers',     label: 'Phiếu kho',          icon: FileText, roles: ['MANAGER'] },
   { to: '/transactions', label: 'Lịch sử giao dịch', icon: History,  roles: ['MANAGER'] },
@@ -20,6 +20,7 @@ const navItems = [
   // Staff
   { to: '/vouchers',      label: 'Phiếu kho', icon: FileText,      roles: ['STAFF'] },
   { to: '/staff-entries', label: 'Nhập liệu', icon: ClipboardList, roles: ['STAFF'] },
+  { to: '/alerts',        label: 'Cảnh báo',  icon: Bell,          roles: ['STAFF'] },
 ]
 
 const ROLE_LABELS = { ADMIN: 'Quản trị viên', MANAGER: 'Quản lý', STAFF: 'Nhân viên' }
@@ -29,9 +30,19 @@ export default function Layout({ children }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [chatOpen, setChatOpen] = useState(false)
+  const [unread, setUnread] = useState(0)
 
   const handleLogout = () => { logout(); navigate('/login') }
   const visibleItems = navItems.filter(item => item.roles.includes(user?.role))
+
+  const handleOpenChat = () => {
+    setChatOpen(v => !v)
+    setUnread(0)
+  }
+
+  const handleNewMessage = () => {
+    if (!chatOpen) setUnread(n => n + 1)
+  }
 
   return (
     <div className="layout">
@@ -46,7 +57,7 @@ export default function Layout({ children }) {
 
         <nav className="sidebar-nav">
           {visibleItems.map(({ to, label, icon: Icon }) => (
-            <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <NavLink key={to+label} to={to} end={to === '/'} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
               <Icon size={18} />
               <span>{label}</span>
               <ChevronRight size={14} className="nav-arrow" />
@@ -68,9 +79,9 @@ export default function Layout({ children }) {
         </div>
       </aside>
 
-      {/* Chat FAB — cố định góc dưới phải */}
+      {/* Chat FAB với chấm đỏ unread */}
       <button
-        onClick={() => setChatOpen(v => !v)}
+        onClick={handleOpenChat}
         title="Chat nhóm"
         style={{
           position: 'fixed', bottom: 28, right: 28, zIndex: 1000,
@@ -84,9 +95,23 @@ export default function Layout({ children }) {
         onMouseLeave={e => e.currentTarget.style.background = '#1E40AF'}
       >
         <MessageSquare size={22} />
+        {unread > 0 && (
+          <span style={{
+            position: 'absolute', top: 6, right: 6,
+            width: 18, height: 18, borderRadius: '50%',
+            background: '#EF4444', color: 'white',
+            fontSize: 11, fontWeight: 700,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: '2px solid white',
+            lineHeight: 1,
+          }}>
+            {unread > 9 ? '9+' : unread}
+          </span>
+        )}
       </button>
+
       <main className="main-content">{children}</main>
-      {chatOpen && <ChatWidget onClose={() => setChatOpen(false)} />}
+      {chatOpen && <ChatWidget onClose={() => setChatOpen(false)} onNewMessage={handleNewMessage} />}
     </div>
   )
 }

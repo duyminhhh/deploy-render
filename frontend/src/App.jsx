@@ -36,7 +36,7 @@ function AppRoutes() {
       <Route path="/stock-in"     element={<ProtectedRoute roles={['MANAGER']}><StockInPage/></ProtectedRoute>} />
       <Route path="/stock-out"    element={<ProtectedRoute roles={['MANAGER']}><StockOutPage/></ProtectedRoute>} />
       <Route path="/transactions" element={<ProtectedRoute roles={['MANAGER']}><TransactionsPage/></ProtectedRoute>} />
-      <Route path="/alerts"       element={<ProtectedRoute roles={['MANAGER']}><AlertsPage/></ProtectedRoute>} />
+      <Route path="/alerts"       element={<ProtectedRoute roles={['MANAGER','STAFF']}><AlertsPage/></ProtectedRoute>} />
 
       {/* Manager + Staff: xem phiếu (Manager quản lý đầy đủ, Staff chỉ xem phiếu đã duyệt) */}
       <Route path="/vouchers" element={<ProtectedRoute roles={['MANAGER', 'STAFF']}><VouchersPage/></ProtectedRoute>} />

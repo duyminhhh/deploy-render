@@ -76,7 +76,7 @@ async def websocket_endpoint(ws: WebSocket, token: str = Query(...)):
     await manager.broadcast({
         "type": "user_joined",
         "user_id": user.id,
-        "username": user.username,
+        "username": user.full_name or user.username,
         "role": user.role
     }, exclude=user.id)
 
@@ -98,7 +98,7 @@ async def websocket_endpoint(ws: WebSocket, token: str = Query(...)):
                     "type": "message",
                     "id": msg.id,
                     "sender_id": user.id,
-                    "sender_name": user.username,
+                    "sender_name": user.full_name or user.username,
                     "sender_role": user.role,
                     "content": content,
                     "created_at": msg.created_at.isoformat()
